@@ -1,168 +1,192 @@
-[![Coverage Status](https://coveralls.io/repos/github/ModusCreateOrg/budgeting-sample-app-webpack2/badge.svg)](https://coveralls.io/github/ModusCreateOrg/budgeting-sample-app-webpack2) [![CircleCI](https://circleci.com/gh/ModusCreateOrg/budgeting-sample-app-webpack2.svg?style=svg)](https://circleci.com/gh/ModusCreateOrg/budgeting-sample-app-webpack2)
+# Ruby automation exercise
+Using cucumber, capybara, siteprism and selenium
 
-# Budgeting :: A Modern React, Redux, React Router 4, Webpack Sample App
-
-![React, Redux, Router, Webpack, Sass](https://cloud.githubusercontent.com/assets/733074/25338311/193a1a40-28ff-11e7-8f22-9a5d9dac7b84.png)
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FModusCreateOrg%2Fbudgeting-sample-app-webpack2.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FModusCreateOrg%2Fbudgeting-sample-app-webpack2?ref=badge_shield)
-
-Production-ready React + Webpack architecture implemented on consumer web apps of some of the most successful enterprises in the world. Perceived performance and development experience are key factors in this setup. You can use this code base for learning or to scaffold your mission-critical project.
-
-[See live demo](https://budget.modus.app/).
-
-![React Budgeting App](https://cloud.githubusercontent.com/assets/733074/25340900/6ab1d536-2907-11e7-8083-b78f8ae601b4.png)
-
-## Budgeting Application
-The is a simple budget management application. It tracks inflow and outflow, shows remaining budget, and interesting reports with charts. As such, it offers more features than the usual Todo App. 
-
-Budgeting app is a showcase project that demonstrates important decisions in architecture and development of a modern React application.
-
-Feel free to use it as a reference app or a starter kit.
-
-## Key concepts:
-
-- [x] [Webpack 3 Tree shaking](http://moduscreate.com/webpack-2-tree-shaking-configuration/)
-- [x] [PRPL pattern](https://www.slideshare.net/grgur/prpl-pattern-with-webpack-and-react) with minimal application core
-- [x] Automatic code splitting with React Router 4 and `import()` statement
-- [x] Automatic common chunk bundling
-- [x] CSS modules
-- [x] Snapshot testing with Jest
-- [x] Flow static typing. Check out this [guide to using Flow in the project](https://github.com/ModusCreateOrg/budgeting-sample-app-webpack2/blob/master/docs/flow.md).
-- [x] Performance budgets in Webpack 3
-- [x] React 16 Error Boundaries
-
-## Performance
-![Budgeting App Performance](https://cloud.githubusercontent.com/assets/733074/25339194/1af94448-2902-11e7-8982-c1a9b647fac0.png)
-_The app loads in 1 second on 3G, cache disabled_
-
-Budgeting app is **blazing fast**, thanks to the smart architecture and Webpack 3 configuration. It takes about 1000ms (1s) to load on 3G (see above).
-
-![Alex Russel Test](https://cloud.githubusercontent.com/assets/733074/25586449/acf14628-2e9f-11e7-8839-2f7c20809581.png)
-_Emerging Markets 3G Filmstrip_
-
-The [aggressive test](https://www.webpagetest.org/video/compare.php?tests=170501_0S_XQ5-r:2-c:0) above shows the budgeting app loads in under 5 seconds. It's a heavily limited connection that accounts for poor connectivity and limited bandwidth. 
-
-![Waterfall](https://cloud.githubusercontent.com/assets/733074/25586623/676a378a-2ea0-11e7-9342-c040751b6ec6.png)
-
-All important (aka critical path) assets are loaded as early as possible, while the others (e.g. images or GitHub buttons) will load after the first render.
-
-#### How did we get that performance?
-
-1. **Minimal application core.** We decided to ditch the usual convention of creating a vendor chunk. Instead, it's bundled in the app core. The app core is actually very small, containing just the code needed to bootstrap the app.
-2. **Common code is a chunk.** We let Webpack figure out which bundles we reuse in chunks and create a common chunk that's also asyncronous. 
-3. **Redux module injection**. Each chunk contains respective views _and_ redux modules. Yes, that means reducers, action creators, actions - are all dynamically injected as we navigate through routes. That adds to the _minimal application core_ concept and PRPL pattern. 
-4. **H2 Push.** The app is hosted on Firebase and we use the magic of _HTTP2 Push_ to push some of the scripts before they are requested.
-5. **Pre-caching**. Service Workers pre-cache resources so the browser can access them as soon as the user needs to.
-
-## Charts
-Charts are developed using the awesome D3 library. The idea behind showing charts is not only to show beautiful content, but also to demonstrate keeping heavy content in a chunk that owns it. In other words - we show how applications can run fast even if they use larger libraries.
-
-D3 is used in the `/reports` route only. Given that major routes are separate chunks (code splitting FTW!), the entire D3 library is bundled with the code that needs it. That makes the `/reports` route a bit heavier than the initial `/budget` route, but it also makes routes much faster to load.
-
-## Performance Budgets
-We are looking to maintain the lightest possible application core (_aka entry chunk_). Our target is 300kB for the entrypoint and 300kB for all other assets. This is how we set it in [webpack configuration](https://github.com/ModusCreateOrg/budgeting-sample-app-webpack2/blob/master/webpack.config.js):
-
-```js
-performance: {
-  maxAssetSize: 300000,
-  maxEntrypointSize: 300000,
-  hints: 'warning',
-},
+## Running the web sever
+```shell
+git clone git@github.com:pesedr/budgeting-automation.git
+cd budgeting
+yarn install
+yarn serve
 ```
 
-Adding lots of extra code to the entry chunk might cause the build (`yarn run build`) process to show a warning.
-
-![Performance Budgets](https://cloud.githubusercontent.com/assets/733074/25352700/3ade5cfa-292d-11e7-8d2e-fed88c2c4da0.png)
-
-_Simulated size warning_
-
-Note that running webpack dev server in production mode (`yarn run prod`) will trigger this warning because of the additional dev server code injected in the app. This code will not show in regular production builds.
-
-## Service Workers
-Service workers are enabled only when serving static files, not through webpack-dev-server. Here's how you can test service worker functionality:
-1. Run `yarn run build` (or `npm run build`) to build the app
-2. Run `yarn run serve` (or `npm run serve`) to serve the app on [localhost:3000](http://localhost:3000)
-3. Run a new instance of Chrome with disabled security (because localhost is not on https): 
-
-**OS X**
-
-```bash
-open -a "Google Chrome" --args --user-data-dir=/tmp/unsafe --unsafely-treat-insecure-origin-as-secure=http://localhost
+## Running the tests
+```shell
+cd e2e
+gem install nokogiri -v '1.8.4' --source 'https://rubygems.org/'
+bundle install
+cucumber
 ```
 
-**Linux**
+## Test Plan
 
-```bash
-/path/to/chrome --user-data-dir=/tmp/unsafe --unsafely-treat-insecure-origin-as-secure=http://localhost
-```
+Since this is an example of a test plan for a simple app, environments, versioning and schedules will be omitted. 
 
-**Windows**
+Testing tasks:
 
-```bash
-chrome.exe --user-data-dir=c:\temp --unsafely-treat-insecure-origin-as-secure=http://localhost
-```
+    Budget page:
+        
+        Adding items: 
 
-4. Now you can observe network traffic in the Network tab or SW activity in Application > Service Workers in Developer Tools
+            Base case:
+                Fill in description
+                Fill in value
+                Click add button
+                Verify correct category, description and amount show up. 
+                Verify correct format of each field
 
-## Stack
-The app was built using these aweseome technologies
+            1. Add an item with category income: 
+                Choose category income
+                Do base case
+                Verify amount shows up green with no negative sign
 
-- [x] [Webpack 3.5](https://webpack.github.io)
-- [x] [React 16.x](https://facebook.github.io/react/)
-- [x] [Redux 3.7](http://redux.js.org/)
-- [x] [React Router 4](https://reacttraining.com/react-router/)
-- [x] [Reselect](https://github.com/reactjs/reselect/)
-- [x] [Babel](https://babeljs.io/)
-- [x] [Prettier](https://github.com/prettier/prettier)
-- [x] [Jest](https://facebook.github.io/jest/)
-- [x] [Flow](https://flow.org/en/)
-- [x] [Yarn](https://yarnpkg.com/en/)
-- [x] [Ducks](https://github.com/erikras/ducks-modular-redux/) 🐣
-- [x] [Sass](http://sass-lang.com/)
-- [x] [Autoprefixer](https://github.com/postcss/autoprefixer)
-- [x] [D3](https://d3js.org/)
+            2. Total outflow should increment accordingly
+                Check total outflow balance
+                Do base case
+                Verify total outflow increments by value set
 
-## Yarn Scripts
+            3. Total inflow should increment accordingly
+                Check total inflow balance
+                Do test case 1: Add an item with category income
+                Verify total inflow increments by value set
 
-* `yarn` - install dependencies
-* `yarn start` - run development server
-* `yarn run prod` - run production server
-* `yarn run build` - build app for deployment
-* `yarn run serve` - serve previously built app using pushstate server
-* `yarn run lint` - lint check
-* `yarn run lint:fix` - lint check + autofixes + prettify code with __prettier__
-* `yarn run test` - run test suite
-* `yarn run test:fix` - run test suite watching files for changes
-* `yarn run flow` - run flow type checking
-* `yarn run update-types` - update flow library definitions
+            4. Total working balance should increment accordingly
+                Check total working balance
+                Do test case 1: Add an item with category income
+                Verify total working balance increments by value set
 
-## NPM Scripts
-Similar to Yarn, really...
+            5. Total working balance should decrement accordingly
+                Check total working balance
+                Do base case
+                Verify total working balance decrements by value set
 
-* `npm install` - install dependencies
-* `npm start` - run development server
-* `npm run prod` - run production server
-* `npm run build` - build app for deployment
-* `npm run serve` - serve previously built app using pushstate server
-* `npm run lint` - lint check
-* `npm run lint:fix` - lint check + autofixes + prettify code with __prettier__
-* `npm run test` - run test suite
-* `npm run test:fix` - run test suite watching files for changes
-* `npm run flow` - run flow type checking
-* `npm run update-types` - update flow library definitions
+            6. Verify working balance is positive if total inflow is greater
+                Do base case with a value greater than total outflow
+                Verify total working balance is the difference between total inflow and total outflow
+                Verify total working balance is positive and green
 
-## Honorary Mentions
+            7. Verify working balance is negative if total outflow is greater (bug)
+                Do test case 1 with a value greater than total inflow
+                Verify total working balance is the difference between total inflow and total outflow
+                Verify total working balance is negative and red
 
-* Thanks to [React experts at Modus Create](https://moduscreate.com), particularly [Tim Eagan](https://twitter.com/TimothyEagan), [Jason Malfatto](https://twitter.com/jmalfatto), [Brice Mason](https://twitter.com/bricemason), and [Esteban Las](https://twitter.com/elas78) for infinite amounts of experience poured into this app
-* Kudos to [Andrea Grisogono](https://twitter.com/scrumolina) who Scrumorganized the team
-* Thanks to community contributors who helped with code and screamed about issues. Yeah, we really do appreciate all the screaming. 
-* [Addy Osmani](https://twitter.com/addyosmani) and [Sam Saccone](https://twitter.com/samccone) who helped with the PRPL pattern
-* [Sean T Larkin](https://twitter.com/thelarkinn) who helped with Webpack wizardry
+            8. Verify total inflow is correct
+                Add all income items from the list
+                Verify total inflow is the same as the addition from previous step
 
-## Want more?
-This project is maintained by [Modus Create](https://moduscreate.com). Fantastic React apps are in our DNA so give us a buzz if we can help with your awesome project.
+            9. Verify total outflow is correct
+                Add all non-income items from the list
+                Verify total outflow is the same as the addition from previous step
 
-## License
-[MIT](License.md)
+        Navigation bar:
+            
+            1. Budget link
+                Click budget link
+                Verify page stays in /budget without reloading
+            
+            2. Reports link
+                Click reports link
+                Verify page navigates to /reports/inflow-outflow
+            
+            3. Star link
+                Click star link
+                Verify a new tab with github link to repo opens
+            
+            4. Fork link
+                Click fork link
+                Verify a new tab with github link to fork the repo opens
+            
+            4. Modus logo
+                Verify the modus logo appears in the top right corner of the screen
+            
+    Reports page
+
+        Navigation within page:
+
+            1. Inflow vs outflow: 
+                Should be the default page in Reports
+                Verify that there are two bar graphs
+                Verify that it has categories and amounts
+
+            2. Spending by category
+                Click on spending by category
+                Verify page navigates to circle graph without reloading
+                Verify circle graph has animation
+                Verify that it has categories and amounts
+
+        Inflow vs Outflow:
+
+            Pre-reqs: 
+                Navigate to Reports -> Inflow vs Outflow
+
+            1. Verify inflow matches budget
+                Check Inflow total in graph
+                Navigate to Budget page
+                Check inflow total at the bottom
+                Compare with the total in step 1
+                Verify they are the same
+
+            2. Verify outflow matches budget
+                Check Outflow total in graph
+                Navigate to Budget page
+                Check outflow total at the bottom
+                Compare with the total in step 1
+                Verify they are the same
+
+            3. Adding a new category
+                Check which categories appear on screen
+                Navigate to Budget page
+                Do Budget page -> Adding item -> Base case with a category that did not appear in step 1
+                Navigate back to reports page
+                Verify that the new category appears with correct amount
+
+            4. Verify inflow size matches budget
+                Navigate to Budget page
+                Do Budget page -> Adding item -> Case 6
+                Navigate back to reports page
+                Verify that the inflow bar is taller than the outflow bar
 
 
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FModusCreateOrg%2Fbudgeting-sample-app-webpack2.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FModusCreateOrg%2Fbudgeting-sample-app-webpack2?ref=badge_large)
+            5. Verify outflow size matches budget
+                Navigate to Budget page
+                Do Budget page -> Adding item -> Case 7
+                Navigate back to reports page
+                Verify that the outflow bar is taller than the inflow bar
+
+            6. Verify that all categories show up in outcome graph
+                Count all categories listed not income
+                Count all colors in the outflow graph
+                Verify that they are the same number
+                Verify that colors in graph are proportionate to amounts in categories
+
+        Spending by category
+
+            Pre-reqs: 
+                Navigate to Reports -> Spending by Category
+
+            1. Verify that inflow does not show up
+                Navigate to budget page
+                Do Budget page -> Adding item -> Case 1
+                Navigate back to spending by category page
+                Verify that income does not show up in categories
+
+            2. Verify that all categories show up in graph
+                Count all categories listed
+                Count all colors in the graph
+                Verify that they are the same number
+                Verify that colors in graph are proportionate to amounts in categories
+
+            3. Adding a new category
+                Check which categories appear on screen
+                Navigate to Budget page
+                Do Budget page -> Adding item -> Base case with a category that did not appear in step 1
+                Navigate back to spending by category page
+                Verify that the new category appears with correct amount
+
+            4. Verify that existing categories increment
+                Check which categories already exist
+                Choose one of those, and take note of total
+                Navigate to budget page
+                Do Budget page -> Adding item -> Case 2 with values from step 2
+                Navigate back to spending by category page
+                Verify that the category in step 2 incremented by the corresponding value
+
