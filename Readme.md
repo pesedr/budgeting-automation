@@ -2,10 +2,11 @@
 Using cucumber, capybara, siteprism and selenium
 
 ## Running the web sever
+
 ```shell
 git clone https://github.com/pesedr/budgeting-automation.git
-yarn install
-yarn serve
+npm install
+npm run serve
 ```
 
 ## Running the tests
