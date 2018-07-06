@@ -3,8 +3,7 @@ Using cucumber, capybara, siteprism and selenium
 
 ## Running the web sever
 ```shell
-git clone git@github.com:pesedr/budgeting-automation.git
-cd budgeting
+git clone https://github.com/pesedr/budgeting-automation.git
 yarn install
 yarn serve
 ```
@@ -19,7 +18,13 @@ cucumber
 
 ## Test Plan
 
-Since this is an example of a test plan for a simple app, environments, versioning and schedules will be omitted. 
+A normal test plan should provide information for the different environments
+It should also include release dates, with a list of the changes that are done per version.
+In each version a new test case should be added to the testing plan.
+Known bugs that have been added to the backlog should also be listed, so as to avoid testers creating existing bugs.
+There should also be different test plans according to the project and deployment needs: smoke, regression, etc.
+
+Since this is an example of a test plan for a simple app, environments, versioning and schedules will be omitted.
 
 Testing tasks:
 
@@ -76,6 +81,28 @@ Testing tasks:
             9. Verify total outflow is correct
                 Add all non-income items from the list
                 Verify total outflow is the same as the addition from previous step
+
+            10.Verify can't add an item with empty value
+                Add a description
+                Leave value empty
+                Click add
+                Verify element is not added to list
+
+            11.Verify can't add an item with empty description (bug?)
+                Add a value
+                Leave description empty
+                Click add
+                Verify element is not added to list
+
+            12.Verify adding income doesn't add to total outflow
+                Make note of total outflow
+                Do test case 1
+                Verify that total outflow does not increment or reduce
+
+            12.Verify adding expense doesn't add to total inflow
+                Make note of total inflow
+                Do test base case
+                Verify that total inflow does not increment or reduce
 
         Navigation bar:
             
@@ -144,7 +171,6 @@ Testing tasks:
                 Do Budget page -> Adding item -> Case 6
                 Navigate back to reports page
                 Verify that the inflow bar is taller than the outflow bar
-
 
             5. Verify outflow size matches budget
                 Navigate to Budget page
